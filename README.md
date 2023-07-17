@@ -1,1 +1,5 @@
 # Intro to MongoDB
+
+Relational databases have long been the defacto standard for data management. In recent years, a number of competing technologies have started gaining favor. Among these technologies lies MongoDB, a robust document database designed to naturally fit into a variety of development environments. By storing data as documents that reflect the structures as they exist within our applications, MongoDB changes how we approach data storage and retrieval.
+
+Let's explore data management with MongoDB. We'll discuss how collections and the document model require different thought processes than more traditional relational structures. We'll then discuss managing data through CRUD operations and the aggregation pipeline. We'll also look at some performance tuning considerations and even some common schema patterns. At the end of our discussion you should have a solid understanding of some core MongoDB concepts, how MongoDB could fit into your environment, and a foundation for further study.
