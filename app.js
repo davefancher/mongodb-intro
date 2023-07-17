@@ -4,6 +4,7 @@ const http = require("node:http");
 const { Writable } = require("node:stream");
 
 const express = require("express");
+const { MongoClient } = require("mongodb");
 const { Server: SocketIOServer } = require("socket.io");
 const winston = require("winston");
 const { combine, colorize, printf, json, timestamp } = winston.format;
@@ -50,7 +51,14 @@ winston
             json())
     }));
 
-const HTTP_PORT = 80;
-httpServer.listen(HTTP_PORT);
+MongoClient
+    .connect("mongodb://127.0.0.1")
+    .then(client => {
+        winston.info(`Connected to MongoDB`);
 
-winston.info(`Listening on ${HTTP_PORT}`);
+        const HTTP_PORT = 80;
+        httpServer.listen(HTTP_PORT);
+        
+        winston.info(`Listening on ${HTTP_PORT}`);
+        
+    });
