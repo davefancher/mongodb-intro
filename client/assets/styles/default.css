@@ -1,0 +1,19 @@
+img {
+    border-radius: 25px;
+}
+
+div.title-slide {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+div.title-slide > div.hero-image {
+    flex: 1 1 300px
+}
+
+div.title-slide > div.title-content {
+    flex: 1 1 300px;
+    text-align: left;
+    padding-left: 20px;
+}
