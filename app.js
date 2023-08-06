@@ -16,6 +16,7 @@ const httpServer =
     express()
         .use("/lib/revealjs", express.static("./node_modules/reveal.js/dist"))
         .use("/lib/revealjs/plugins", express.static("./node_modules/reveal.js/plugin"))
+        .use("/lib/revealjs/plugins/mermaid", express.static("./node_modules/reveal.js-mermaid-plugin/plugin/mermaid"))
         .use("/", express.static("./client/"))
         [PIPE_SYNC](http.createServer);
 
@@ -58,7 +59,6 @@ MongoClient
 
         const HTTP_PORT = 80;
         httpServer.listen(HTTP_PORT);
-        
+
         winston.info(`Listening on ${HTTP_PORT}`);
-        
     });

@@ -8,6 +8,7 @@ window.addEventListener(
             plugins: [
                 RevealHighlight,
                 RevealMarkdown,
+                RevealMermaid,
                 RevealNotes
             ]
         });

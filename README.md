@@ -15,3 +15,13 @@ Install the NPM packages `npm i`
 * [Install Docker](https://docs.docker.com/get-docker/)
 * Install the  MongoDB container
     * `docker run --name mongodb-local -d -p 27017:27017 mongo:latest`
+
+### MongoDB Tools
+* [Install the MongoDB CLI Tools](https://www.mongodb.com/try/download/database-tools)
+* (Optional) [Install MongoDB Compass](https://www.mongodb.com/try/download/compass)
+* (Optional) [Install the MongDB VS Code Extension](https://www.mongodb.com/docs/mongodb-vscode/install/)
+
+### Sample Data
+* [Download the Sample Mflix Archive](https://atlas-education.s3.amazonaws.com/sample_mflix.archive)
+* Restore the Sample Mflix Archive
+    * `mongorestore --archive={{path to archive}}`
