@@ -17,3 +17,65 @@ div.title-slide > div.title-content {
     text-align: left;
     padding-left: 20px;
 }
+
+.two-column-text {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 10px;
+    row-gap: 10px;
+}
+
+.two-column-text > div {
+    text-align: left;
+    margin: 0;
+}
+
+.two-column-code {
+    display: grid;
+    grid-template-rows: 1fr 50px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.two-column-code > div.example {
+    grid-column: 1;
+    grid-row: 1;
+    max-height: 325px;
+    max-width: 500px;
+}
+
+.two-column-code > div.output {
+    grid-column: 2;
+    grid-row: 1;
+    max-height: 325px;
+    max-width: 500px;
+}
+
+.two-column-code > div.example-controls {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: right;
+}
+
+.two-column-code > div.example-controls > button {
+    background-color: rgb(238, 232, 213);
+    border: solid 1px black;
+    font-size: 16pt;
+    width: 150px;
+}
+
+.two-column-code > div > pre {
+    display: block;
+    height: 99%;
+    width: 99%;
+}
+
+div .footnote {
+    font-size: 8pt;
+    opacity: 25%;
+}
+
+.reveal pre {
+    font-size: .4em;
+    margin: 5px;
+}

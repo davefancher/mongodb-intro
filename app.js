@@ -10,7 +10,29 @@ const winston = require("winston");
 const { combine, colorize, printf, json, timestamp } = winston.format;
 
 const { LOG_LEVEL } = require("./lib/constants");
-const { PIPE_SYNC } = require("./lib/extensions");
+const { PIPE, PIPE_SYNC } = require("./lib/extensions");
+
+const DB_NAME = "sample_mflix"
+
+const SOCKET_COMMANDS = Object.freeze({
+    "runMqlExample":
+    client =>
+        client
+            .db(DB_NAME)
+            .collection("movies")
+            .findOne(
+                { title: /What we do in the shadows/i },
+                {
+                    _id: 1,
+                    title: 1,
+                    rated: 1,
+                    languages: 1,
+                    directors: 1,
+                    cast: 1,
+                    genres: 1,
+                    imdb: 1,
+                })
+});
 
 const httpServer =
     express()
@@ -52,10 +74,32 @@ winston
             json())
     }));
 
+const handleSocketConnection =
+    client =>
+        socket =>
+            SOCKET_COMMANDS
+                [PIPE_SYNC](Object.entries)
+                .reduce(
+                    (s, [ command, handler ]) =>
+                        s.on(command,
+                            async () => {
+                                try {
+                                    void await client
+                                        [PIPE_SYNC](handler)
+                                        [PIPE](r => JSON.stringify(r, null, 4))
+                                        [PIPE](r => socket.emit("data", r));
+                                } catch (ex) {
+                                    socket.emit("error", { message: ex.message });
+                                }
+                            }),
+                        socket);
+
 MongoClient
     .connect("mongodb://127.0.0.1")
     .then(client => {
         winston.info(`Connected to MongoDB`);
+
+        io.on("connection", handleSocketConnection(client));
 
         const HTTP_PORT = 80;
         httpServer.listen(HTTP_PORT);
