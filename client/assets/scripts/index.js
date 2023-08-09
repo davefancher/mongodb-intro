@@ -1,27 +1,31 @@
 "use strict";
 
-const runMqlExample =
+const runDemo =
     (socket, highlight) =>
-        () => {
-            const output = document.getElementById("mqlExampleOutput");
+        event => {
+            const demoName = event.target.getAttribute("data-demo-name");
+
+            const outputElement = document.getElementById(`${demoName}_output`);
 
             socket
                 .once(
                     "data",
                     data => {
                         const content = document.createTextNode(data);
-                        output.replaceChildren(content);
+                        outputElement.replaceChildren(content);
 
                         highlight.highlightBlock(output);
                     })
-                .emit("runMqlExample");
+                .emit(demoName);
         };
 
-const clearMqlExample =
-    () => {
-        const output = document.getElementById("mqlExampleOutput");
+const clearDemo =
+    event => {
+        const demoName = event.target.getAttribute("data-demo-name");
 
-        output.replaceChildren([]);
+        const outputElement = document.getElementById(`${demoName}_output`);
+
+        outputElement.replaceChildren([]);
     };
 
 window.addEventListener(
@@ -44,14 +48,21 @@ window.addEventListener(
         const highlight = Reveal.getPlugin("highlight");
 
         document
-            .getElementById("runMqlExampleButton")
-            .addEventListener(
-                "mouseup",
-                runMqlExample(socket, highlight));
+            .querySelectorAll("BUTTON.runDemoButton")
+            .forEach(button => {
+                console.log(button);
+                button
+                    .addEventListener(
+                        "mouseup",
+                        runDemo(socket, highlight));
+            });
 
         document
-            .getElementById("clearMqlExampleButton")
-            .addEventListener(
-                "mouseup",
-                clearMqlExample);
+            .querySelectorAll("BUTTON.clearDemoButton")
+            .forEach(button => {
+                button
+                    .addEventListener(
+                        "mouseup",
+                        clearDemo);
+            });
     });

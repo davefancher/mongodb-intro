@@ -15,23 +15,79 @@ const { PIPE, PIPE_SYNC } = require("./lib/extensions");
 const DB_NAME = "sample_mflix"
 
 const SOCKET_COMMANDS = Object.freeze({
-    "runMqlExample":
-    client =>
-        client
-            .db(DB_NAME)
-            .collection("movies")
-            .findOne(
-                { title: /What we do in the shadows/i },
-                {
-                    _id: 1,
-                    title: 1,
-                    rated: 1,
-                    languages: 1,
-                    directors: 1,
-                    cast: 1,
-                    genres: 1,
-                    imdb: 1,
-                })
+    "findOne":
+        client =>
+            client
+                .db(DB_NAME)
+                .collection("movies")
+                .findOne(
+                    { title: /What we do in the shadows/i },
+                    {
+                        projection: {
+                            _id: 1,
+                            title: 1,
+                            rated: 1,
+                            languages: 1,
+                            directors: 1,
+                            cast: 1,
+                            genres: 1,
+                            imdb: 1
+                        }
+                    }),
+    "insertOne":
+        async client => {
+            const movies = client.db(DB_NAME).collection("movies");
+
+            const insertResult =
+                await movies
+                    .insertOne(
+                        {
+                            title: "Jac Kessler's Popsy",
+                            rated: "R",
+                            languages: [ "English" ],
+                            directors: [ "Jac Kessler" ],
+                            cast: [ "Alex Dunning", "Nadia Fancher", "Ted Raimi" ],
+                            genres: [ "Short", "Horror", "Thriller" ]
+                        });
+
+            const doc =
+                await movies
+                    .findOne({ _id: insertResult.insertedId });
+
+            return {
+                insertResult,
+                doc
+            };
+        },
+    "updateOne":
+        async client => {
+            const movies = client.db(DB_NAME).collection("movies");
+
+            const updateResult =
+                await movies
+                    .updateOne(
+                        { title: "Jac Kessler's Popsy" },
+                        {
+                            $set: {
+                                released: new Date("2019-09-08T00:00:00Z")
+                            },
+                            $push: {
+                                genres: "Student",
+                                languages: "Spanish"
+                            }
+                        });
+
+            const doc =
+                await movies
+                    .findOne(
+                        { title: "Jac Kessler's Popsy" },
+                        { sort: { _id: -1 } });
+
+            return {
+                updateResult,
+                doc
+            };
+        }
 });
 
 const httpServer =
@@ -89,6 +145,7 @@ const handleSocketConnection =
                                         [PIPE](r => JSON.stringify(r, null, 4))
                                         [PIPE](r => socket.emit("data", r));
                                 } catch (ex) {
+                                    console.error(ex);
                                     socket.emit("error", { message: ex.message });
                                 }
                             }),

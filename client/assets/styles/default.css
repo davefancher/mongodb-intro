@@ -30,41 +30,46 @@ div.title-slide > div.title-content {
     margin: 0;
 }
 
-.two-column-code {
+.demo-columns {
     display: grid;
-    grid-template-rows: 1fr 50px;
+    grid-template-rows: 350px 50px;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
 }
 
-.two-column-code > div.example {
+.demo-columns > div.example {
     grid-column: 1;
     grid-row: 1;
-    max-height: 325px;
+    max-height: 350px;
     max-width: 500px;
 }
 
-.two-column-code > div.output {
+.demo-columns > div.output {
     grid-column: 2;
     grid-row: 1;
-    max-height: 325px;
+    max-height: 350px;
     max-width: 500px;
 }
 
-.two-column-code > div.example-controls {
+.demo-columns > div.output code {
+    max-height: 350px;
+    max-width: 500px;
+}
+
+.demo-columns > div.example-controls {
     grid-column: 1;
     grid-row: 2;
     text-align: right;
 }
 
-.two-column-code > div.example-controls > button {
+.demo-columns > div.example-controls > button {
     background-color: rgb(238, 232, 213);
     border: solid 1px black;
     font-size: 16pt;
     width: 150px;
 }
 
-.two-column-code > div > pre {
+.demo-columns > div > pre {
     display: block;
     height: 99%;
     width: 99%;

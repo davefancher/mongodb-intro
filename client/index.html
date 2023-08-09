@@ -86,53 +86,12 @@
 
                     <ul>
                         <li class="fragment">Doesn't use SQL</li>
-                        <li class="fragment">MongoDB Query Language (MQL)</li>
+                        <li class="fragment">Query API</li>
                         <li class="fragment">JSON-like language</li>
                         <li class="fragment">Defines standard CRUD operations</li>
                         <li class="fragment">Defines schema manipulation operations</li>
                         <li class="fragment">Aggregation pipelines</li>
                     </ul>
-                </section>
-
-                <section>
-                    <h3>MQL Example - findOne</h3>
-
-                    <div class="two-column-code">
-                        <div class="example">
-                            <pre>
-                                <code class="javascript" data-trim data-noescape data-line-numbers="1-16|1|3-4|5-16|6|7-16">
-                                    use('sample_mflix');
-        
-                                    db
-                                        .getCollection("movies")
-                                        .findOne(
-                                            { title: /What we do in the shadows/i },
-                                            {
-                                                _id: 1,
-                                                title: 1,
-                                                rated: 1,
-                                                languages: 1,
-                                                directors: 1,
-                                                cast: 1,
-                                                genres: 1,
-                                                imdb: 1,
-                                            });
-                                </code>
-                            </pre>
-                        </div>
-
-                        <div class="output">
-                            <pre>
-                                <code id="mqlExampleOutput" class="json" data-trim data-noescape>
-                                </code>
-                            </pre>
-                        </div>
-
-                        <div class="fragment fade-in example-controls">
-                            <button id="clearMqlExampleButton">Clear</button>
-                            <button id="runMqlExampleButton">Run</button>
-                        </div>
-                    </div>
                 </section>
 
                 <section>
@@ -194,6 +153,17 @@
                 </section>
 
                 <section>
+                    <h3>BSON</h3>
+
+                    <ul>
+                        <li>Binary JSON</li>
+                        <li>Encodes type and length information for faster traversal</li>
+                        <li>Adds support for dates, binary data, multiple numeric formats, ObjectID, and so on</li>
+                        <li>Flexible like JSON</li>
+                    </ul>
+                </section>
+
+                <section>
                     <h4>Document Example</h4>
 
                     <pre>
@@ -228,6 +198,7 @@
                         <li class="fragment">Document structure matters</li>
                         <li class="fragment">...but can easily evolve as needs change</li>
                         <li class="fragment">Different and evolving structures may coexist</li>
+                        <li class="fragment">Optional schema validation allows can enforce more rigid structures</li>
                     </ul>
                 </section>
 
@@ -259,30 +230,19 @@
                     <h3>Relationships</h3>
 
                     <ul>
-                        <li class="fragment">Embedded</li>
-                        <li class="fragment">Reference</li>
+                        <li class="fragment">All Data is Relational</li>
+                        <li class="fragment">
+                            Two approaches
+                            <ul>
+                                <li>Embedded</li>
+                                <li>Reference</li>
+                            </ul>
+                        </li>
                     </ul>
                 </section>
 
                 <section>
-                    <h4>Relationship Example - Embedded</h4>
-
-                    <div class="mermaid">
-                        <pre>
-                            %%{init: {'theme': 'default', 'themeVariables': { 'fontFamily': 'consolas' }}}%%
-                            erDiagram
-                                MOVIES {
-                                    objectid _id PK
-                                    string title
-                                    array(string) cast
-                                    array(string) directors
-                                }
-                        </pre>
-                    </div>
-                </section>
-
-                <section>
-                    <h4>Relationship Example - Reference</h4>
+                    <h4>Visualizing Relationships</h4>
 
                     <div class="mermaid">
                         <pre>
@@ -292,12 +252,15 @@
                                 MOVIES {
                                     objectid _id PK
                                     string title
+                                    string[] cast "Embedded relationship"
+                                    string[] directors "Embedded relationship"
+                                    object imdb "Embedded relationship"
                                     int num_mflix_comments
                                 }
 
                                 COMMENTS {
                                     objectid _id PK
-                                    objectid movie_id FK
+                                    objectid movie_id FK "Reference relationship"
                                     string name
                                     string email
                                     date date
@@ -308,6 +271,159 @@
                 </section>
             </section>
 
+            <section>
+                <section>
+                    <h2>Working with Data</h2>
+
+                    <ul>
+                        <li>Query API</li>
+                        <li>Querying data</li>
+                        <li>Inserting data</li>
+                        <li>Modifying data</li>
+                        <li>Deleting data</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Query API</h3>
+
+                    <ul>
+                        <li>Formerly MongoDB Query Language (MQL)</li>
+                        <li>The primary way we interact with our database</li>
+                        <li>Defines CRUD operations</li>
+                        <li>Bulk writes</li>
+                        <li>Geospatial queries</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Querying Data - findOne</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-16|1,2|3-16|4|5-16">
+                                    db
+                                        .getCollection("movies")
+                                        .findOne(
+                                            { title: /What we do in the shadows/i },
+                                            {
+                                                projection: {
+                                                    _id: 1,
+                                                    title: 1,
+                                                    rated: 1,
+                                                    languages: 1,
+                                                    directors: 1,
+                                                    cast: 1,
+                                                    genres: 1,
+                                                    imdb: 1
+                                                }
+                                            });
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="findOne_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="findOne">Clear</button>
+                            <button class="runDemoButton" data-demo-name="findOne">Run</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Inserting Data</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-19|3|4-19">
+                                    db
+                                        .getCollection("movies")
+                                        .insertOne(
+                                            {
+                                                title: "Jac Kessler's Popsy",
+                                                rated: "R",
+                                                languages: [ "English" ],
+                                                directors: [ "Jac Kessler" ],
+                                                cast: [
+                                                    "Alex Dunning",
+                                                    "Nadia Fancher",
+                                                    "Ted Raimi"
+                                                ],
+                                                genres: [
+                                                    "Short",
+                                                    "Horror",
+                                                    "Thriller"
+                                                ]
+                                            });
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="insertOne_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="insertOne">Clear</button>
+                            <button class="runDemoButton" data-demo-name="insertOne">Run</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Updating Data</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-13|3-13|4|5-13">
+                                    db
+                                        .getCollection("movies")
+                                        .updateOne(
+                                            { title: "Jac Kessler's Popsy" },
+                                            {
+                                                $set: {
+                                                    released: new Date("2019-09-08T00:00:00Z")
+                                                },
+                                                $push: {
+                                                    genres: "Student",
+                                                    languages: "Spanish"
+                                                }
+                                            });
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="updateOne_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="updateOne">Clear</button>
+                            <button class="runDemoButton" data-demo-name="updateOne">Run</button>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section>
+                <h2>Aggregation Pipelines</h2>
+            </section>
+
             <!--
 # What I wish I knew about MongoDB Five Years Ago
 
@@ -316,11 +432,11 @@
 * Non-relational -> All data is relational
 * BSON
 * Aggregation Pipelines (Continuously evolving)
+* Indexing
 * Document Patterns
     * Bucket Pattern
     * Polymorphic Pattern
     * Attribute Pattern
-* Indexing
 * Explain Plans
 * Transactions (more recent v4.0)
             -->
