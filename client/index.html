@@ -418,28 +418,249 @@
                         </div>
                     </div>
                 </section>
+
+                <section>
+                    <h3>Deleting Data</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-5|3-5|4">
+                                    db
+                                        .getCollection("movies")
+                                        .deleteOne(
+                                            { title: "Jac Kessler's Popsy" }
+                                        );
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="deleteOne_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="deleteOne">Clear</button>
+                            <button class="runDemoButton" data-demo-name="deleteOne">Run</button>
+                        </div>
+                    </div>
+                </section>
             </section>
 
             <section>
-                <h2>Aggregation Pipelines</h2>
+                <section>
+                    <h2>Aggregation Pipelines</h2>
+
+                    <ul>
+                        <li class="fragment">Alternative way to query data</li>
+                        <li class="fragment">Pipeline pattern</li>
+                        <li class="fragment">Significantly more powerful</li>
+                        <li class="fragment">Data from one stage flows to the next</li>
+                        <li class="fragment">"Queryland" vs "Aggregationland"</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Common Stages</h3>
+
+                    <div class="two-column-text">
+                        <div>
+                            <ul>
+                                <li>$match</li>
+                                <li>$project</li>
+                                <li>$set</li>
+                                <li>$unset</li>
+                                <li>$group</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <ul>
+                                <li>$sort</li>
+                                <li>$lookup</li>
+                                <li>$limit</li>
+                                <li>$unwind</li>
+                                <li>$graphLookup</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Aggregation Pipeline Example</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-39|1-2|3|4-38|4-8|9-16|17-33|34-38">
+                                    db
+                                        .getCollection("movies")
+                                        .aggregate([
+                                        {
+                                          $match: {
+                                            directors: "Quentin Tarantino",
+                                          },
+                                        },
+                                        {
+                                          $lookup: {
+                                            from: "comments",
+                                            foreignField: "movie_id",
+                                            localField: "_id",
+                                            as: "comments",
+                                          },
+                                        },
+                                        {
+                                          $group: {
+                                            _id: {
+                                              $year: "$released",
+                                            },
+                                            movies: {
+                                              $push: {
+                                                _id: "$_id",
+                                                title: "$title",
+                                                cast: "$cast",
+                                                released: "$released",
+                                                comments: { $slice: [ "$comments", 5 ] },
+                                                commentCount: { $size: "$comments" } ]
+                                              },
+                                            },
+                                          },
+                                        },
+                                        {
+                                          $sort: {
+                                            _id: 1,
+                                          },
+                                        },
+                                      ]);
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="aggregationPipeline_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="aggregationPipeline">Clear</button>
+                            <button class="runDemoButton" data-demo-name="aggregationPipeline">Run</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Streaming vs Blocking</h3>
+
+                    <ul>
+                        <li>Most stages are <em>streaming</em></li>
+                        <li>Grouping and counting stages are <em>blocking</em></li>
+                    </ul>
+                </section>
             </section>
 
-            <!--
-# What I wish I knew about MongoDB Five Years Ago
+            <section>
+                <section>
+                    <h2>Explain Plans</h2>
 
-* Tables & Rows -> Collections & Documents
-* Schemaless -> Flexible Schema
-* Non-relational -> All data is relational
-* BSON
-* Aggregation Pipelines (Continuously evolving)
-* Indexing
-* Document Patterns
-    * Bucket Pattern
-    * Polymorphic Pattern
-    * Attribute Pattern
-* Explain Plans
-* Transactions (more recent v4.0)
-            -->
+                    <ul>
+                        <li class="fragment">Explain how the query engine will locate documents</li>
+                        <li class="fragment">Available for "classic" queries and pipelines</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Explain Plan Example</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-4|1-2|3|4">
+                                    db
+                                        .getCollection("movies")
+                                        .find({ directors: "Quentin Tarantino" })
+                                        .explain()
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="explainPlan_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="explainPlan">Clear</button>
+                            <button class="runDemoButton" data-demo-name="explainPlan">Run</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Explain Aggregation Plan Example</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-8|1-2|3-7|8">
+                                    db
+                                        .getCollection("movies")
+                                        .aggregate([
+                                            { $match: {
+                                                directors: "Quentin Tarantino" }
+                                            }
+                                        ])
+                                        .explain()
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="explainAggregationPlan_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="explainAggregationPlan">Clear</button>
+                            <button class="runDemoButton" data-demo-name="explainAggregationPlan">Run</button>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Indexes</h2>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Document Patterns</h2>
+                </section>
+
+                <!--
+                    * Bucket Pattern
+                    * Polymorphic Pattern
+                    * Attribute Pattern
+                    * Outlier Pattern
+                    * Schema Versioning Pattern
+                -->
+            </section>
+
+            <section>
+                <section>
+                    <h2>Transactions</h2>
+                </section>
+            </section>
         </div>
     </div>
 </body>

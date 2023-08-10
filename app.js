@@ -4,7 +4,7 @@ const http = require("node:http");
 const { Writable } = require("node:stream");
 
 const express = require("express");
-const { MongoClient } = require("mongodb");
+const { MongoClient, Db } = require("mongodb");
 const { Server: SocketIOServer } = require("socket.io");
 const winston = require("winston");
 const { combine, colorize, printf, json, timestamp } = winston.format;
@@ -87,7 +87,70 @@ const SOCKET_COMMANDS = Object.freeze({
                 updateResult,
                 doc
             };
-        }
+        },
+    "deleteOne":
+        async client => {
+            const movies = client.db(DB_NAME).collection("movies");
+
+            const deleteResult =
+                await movies
+                    .deleteOne(
+                        { title: "Jac Kessler's Popsy" }
+                    );
+
+            return deleteResult;
+        },
+    "aggregationPipeline":
+        client =>
+            client
+                .db(DB_NAME)
+                .collection("movies")
+                .aggregate([
+                    {
+                        $match: { directors: "Quentin Tarantino" },
+                    },
+                    {
+                        $lookup: {
+                            from: "comments",
+                            foreignField: "movie_id",
+                            localField: "_id",
+                            as: "comments",
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: { $year: "$released" },
+                            movies: {
+                                $push: {
+                                    _id: "$_id",
+                                    title: "$title",
+                                    cast: "$cast",
+                                    released: "$released",
+                                    comments: { $slice: [ "$comments", 5 ] },
+                                    commentCount: { $size: "$comments" }
+                                }
+                            }
+                        }
+                    },
+                    { $sort: { _id: 1 } }
+                ])
+                .toArray(),
+    "explainPlan":
+        client =>
+            client
+                .db(DB_NAME)
+                .collection("movies")
+                .find({ directors: "Quentin Tarantino" })
+                .explain(),
+        "explainAggregationPlan":
+            client =>
+                client
+                    .db(DB_NAME)
+                    .collection("movies")
+                    .aggregate([
+                        { $match: { directors: "Quentin Tarantino" } }
+                    ])
+                    .explain()
 });
 
 const httpServer =
