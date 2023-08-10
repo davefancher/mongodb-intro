@@ -142,15 +142,68 @@ const SOCKET_COMMANDS = Object.freeze({
                 .collection("movies")
                 .find({ directors: "Quentin Tarantino" })
                 .explain(),
-        "explainAggregationPlan":
-            client =>
-                client
+    "explainAggregationPlan":
+        client =>
+            client
+                .db(DB_NAME)
+                .collection("movies")
+                .aggregate([
+                    { $match: { directors: "Quentin Tarantino" } }
+                ])
+                .explain(),
+    "multikeyIndex":
+        async client => {
+            const movies = client.db(DB_NAME).collection("movies");
+
+            const createIndexResult =
+                await movies
+                    .createIndex({
+                        "directors": 1
+                    });
+
+            const explainResult =
+                await client
                     .db(DB_NAME)
                     .collection("movies")
                     .aggregate([
                         { $match: { directors: "Quentin Tarantino" } }
                     ])
-                    .explain()
+                    .explain();
+
+            return {
+                createIndexResult,
+                explainResult
+            };
+        },
+    "hideIndex":
+        async client => {
+            const movies = client.db(DB_NAME).collection("movies");
+
+            const hideIndexResult =
+                await client
+                    .db(DB_NAME)
+                    .command({
+                        collMod: "movies",
+                        index: {
+                            name: "directors_1",
+                            hidden: true
+                        }
+                    });
+
+            const explainResult =
+                await client
+                    .db(DB_NAME)
+                    .collection("movies")
+                    .aggregate([
+                        { $match: { directors: "Quentin Tarantino" } }
+                    ])
+                    .explain();
+
+            return {
+                createIndexResult: hideIndexResult,
+                explainResult
+            };
+        }
 });
 
 const httpServer =
@@ -214,10 +267,36 @@ const handleSocketConnection =
                             }),
                         socket);
 
+const resetDb =
+    client => {
+        const movies = client.db(DB_NAME).collection("movies");
+
+        const deleteResult =
+            movies
+                .deleteOne(
+                    { title: "Jac Kessler's Popsy" }
+                );
+
+        const dropIndexResult =
+            movies
+                .dropIndex("directors_1");
+
+        return Promise.allSettled([
+            deleteResult,
+            dropIndexResult
+        ]);
+    }
+
 MongoClient
     .connect("mongodb://127.0.0.1")
-    .then(client => {
+    .then(async client => {
         winston.info(`Connected to MongoDB`);
+
+        try {
+            void await resetDb(client);
+        } catch (ex) {
+            console.log(ex);
+        }
 
         io.on("connection", handleSocketConnection(client));
 

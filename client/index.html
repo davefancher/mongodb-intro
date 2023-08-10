@@ -639,6 +639,115 @@
             <section>
                 <section>
                     <h2>Indexes</h2>
+
+                    <ul>
+                        <li class="fragment">Allow more efficient queries</li>
+                        <li class="fragment">_id is the primary key</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Types of indexes</h3>
+
+                    <ul>
+                        <li>Single field</li>
+                        <li>Compound</li>
+                        <li>Multikey</li>
+                        <li>Text</li>
+                        <li>Wildcard</li>
+                        <li>Geospatial</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Creating and Using Indexes</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-16|4-6|9-16">
+                                    // Create a multikey index
+                                    db
+                                        .getCollection("movies")
+                                        .createIndex({
+                                            "directors": 1
+                                        })
+
+                                    // Explain Aggregation Plan
+                                    db
+                                        .getCollection("movies")
+                                        .aggregate([
+                                            { $match: {
+                                                directors: "Quentin Tarantino" }
+                                            }
+                                        ])
+                                        .explain()
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="multikeyIndex_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="multikeyIndex">Clear</button>
+                            <button class="runDemoButton" data-demo-name="multikeyIndex">Run</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>
+                        Hiding Indexes
+                    </h3>
+
+                    <ul>
+                        <li>"Deactivates" indexes without removing index data</li>
+                        <li>Allows restoring the index without rebuilding</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Hiding Indexes</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="1-16|4-6|9-16">
+                                    // Hide the index
+                                    db
+                                        .getCollection("movies")
+                                        .hideIndex("directors_1")
+
+                                    // Explain Aggregation Plan
+                                    db
+                                        .getCollection("movies")
+                                        .aggregate([
+                                            { $match: {
+                                                directors: "Quentin Tarantino" }
+                                            }
+                                        ])
+                                        .explain()
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="output">
+                            <pre>
+                                <code id="hideIndex_output" class="json" data-trim data-noescape>
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="fragment fade-in example-controls">
+                            <button class="clearDemoButton" data-demo-name="hideIndex">Clear</button>
+                            <button class="runDemoButton" data-demo-name="hideIndex">Run</button>
+                        </div>
+                    </div>
                 </section>
             </section>
 
