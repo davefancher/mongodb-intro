@@ -38,7 +38,6 @@
                         </p>
                         <hr />
                         <p style="font-size: 0.5em; margin-bottom: 1.5em;">
-                            Twitter: @davefancher<br />
                             LinkedIn: davefancher
                         </p>
                     </div>
@@ -63,8 +62,19 @@
                 <section>
                     <h2>What is MongoDB?</h2>
 
+                    <div>
+                        "MongoDB is a general-purpose, feature-rich, and powerful document-based NoSQL database that provides efficient and flexible storage for a variety of different types of data sets."
+                    </div>
+
+                    <div class="footnote">https://www.mongodb.com/basics/get-started</div>
+                </section>
+
+                <section>
+                    <h2>What is MongoDB?</h2>
+
                     <ul>
                         <li class="fragment">NoSQL database</li>
+                        <li class="fragment">Built with developers in mind</li>
                         <li class="fragment">Broad support across most ecosystems</li>
                         <li class="fragment">
                             <span class="fragment strike semi-fade-out">Tables & Rows</span>
@@ -76,7 +86,7 @@
                         </li>
                         <li class="fragment">
                             <span class="fragment strike semi-fade-out">Non-relational</span>
-                            <span class="fragment fade-in">All data is relational</span>
+                            <span class="fragment fade-in">"All" data is relational</span>
                         </li>
                     </ul>
                 </section>
@@ -87,10 +97,6 @@
                     <ul>
                         <li class="fragment">Doesn't use SQL</li>
                         <li class="fragment">Query API</li>
-                        <li class="fragment">JSON-like language</li>
-                        <li class="fragment">Defines standard CRUD operations</li>
-                        <li class="fragment">Defines schema manipulation operations</li>
-                        <li class="fragment">Aggregation pipelines</li>
                     </ul>
                 </section>
 
@@ -156,10 +162,10 @@
                     <h3>BSON</h3>
 
                     <ul>
-                        <li>Binary JSON</li>
-                        <li>Encodes type and length information for faster traversal</li>
-                        <li>Adds support for dates, binary data, multiple numeric formats, ObjectID, and so on</li>
-                        <li>Flexible like JSON</li>
+                        <li class="fragment">Binary JSON</li>
+                        <li class="fragment">Encodes type and length information for faster traversal</li>
+                        <li class="fragment">Adds support for dates, binary data, multiple numeric formats, ObjectID, and so on</li>
+                        <li class="fragment">Flexible like JSON</li>
                     </ul>
                 </section>
 
@@ -189,6 +195,22 @@
                               }
                         </code>
                     </pre>
+                </section>
+
+                <section>
+                    <h3>A Note About ObjectIDs</h3>
+
+                    <ul>
+                        <li class="fragment">
+                            3 Components
+                            <ul>
+                                <li>4-byte timestamp component</li>
+                                <li>5-byte random machine/process value</li>
+                                <li>3-byte counter initialized to a random value</li>
+                            </ul>
+                        </li>
+                        <li class="fragment">Timestamp can be extracted easily</li>
+                    </ul>
                 </section>
 
                 <section>
@@ -754,21 +776,215 @@
             <section>
                 <section>
                     <h2>Document Patterns</h2>
+
+                    <ul>
+                        <li class="fragment">Ways of modeling certain data structures</li>
+                        <li class="fragment">Guidelines only</li>
+                        <li class="fragment">Use them<span class="fragment">...or don't.</span></li>
+                    </ul>
                 </section>
 
-                <!--
-                    * Bucket Pattern
-                    * Polymorphic Pattern
-                    * Attribute Pattern
-                    * Outlier Pattern
-                    * Schema Versioning Pattern
-                -->
+                <section>
+                    <h3>Some Useful Patterns</h3>
+
+                    <ul>
+                        <li>Bucket Pattern</li>
+                        <li>Polymorphic Pattern</li>
+                        <li>Schema Versioning Pattern</li>
+                        <li>Attribute Pattern</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Bucket Pattern</h3>
+
+                    <ul>
+                        <li class="fragment">Groups many documents into a single document</li>
+                        <li class="fragment">Reduces number of index values</li>
+                        <li class="fragment">Can simplify queries</li>
+                        <li class="fragment">Facilitates "pre-aggregation"</li>
+                        <li class="fragment">Time-series collections leverage this pattern</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Bucket Pattern Example</h3>
+
+                    <div class="demo-columns">
+                        <div class="example">
+                            <pre>
+                                <code class="javascript" data-trim data-noescape data-line-numbers="">
+                                {
+                                    sensor_id: 12345,
+                                    timestamp: ISODate("2019-01-31T10:00:00.000Z"),
+                                    temperature: 40
+                                }
+
+                                {
+                                    sensor_id: 12345,
+                                    timestamp: ISODate("2019-01-31T10:01:00.000Z"),
+                                    temperature: 40
+                                }
+
+                                {
+                                    sensor_id: 12345,
+                                    timestamp: ISODate("2019-01-31T10:02:00.000Z"),
+                                    temperature: 41
+                                }
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div>
+                            <pre>
+                                <code class="json" data-trim data-noescape>
+                                {
+                                    sensor_id: 12345,
+                                    start_date: ISODate("2019-01-31T10:00:00.000Z"),
+                                    end_date: ISODate("2019-01-31T10:59:59.000Z"),
+                                    measurements: [
+                                        {
+                                            timestamp: ISODate("2019-01-31T10:00:00.000Z"),
+                                            temperature: 40
+                                        },
+                                        {
+                                            timestamp: ISODate("2019-01-31T10:01:00.000Z"),
+                                            temperature: 40
+                                        },
+                                        … 
+                                        {
+                                            timestamp: ISODate("2019-01-31T10:42:00.000Z"),
+                                            temperature: 42
+                                        }
+                                    ],
+                                    transaction_count: 42,
+                                    sum_temperature: 2413
+                                } 
+                                </code>
+                            </pre>
+                        </div>
+
+                        <div class="example-controls footnote">https://www.mongodb.com/blog/post/building-with-patterns-the-bucket-pattern</div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Polymorphic Pattern</h3>
+
+                    <ul>
+                        <li>Leverages the flexible schema</li>
+                        <li>Captures slightly different structures in one collection</li>
+                        <li>Usually includes a "type" property to identify the data shape</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Polymorphic Pattern Example</h3>
+
+                    <div>
+                        <pre>
+                            <code class="json" data-trim data-noescape data-line-numbers>
+                                {
+                                    _id: 1,
+                                    title: "Jaguar Statue",
+                                    content_type: "image/jpg",
+                                    file_name: "DSC_1234.jpg"
+                                    width_px: 1920,
+                                    height_px: 1080
+                                }
+
+                                {
+                                    _id: 1,
+                                    title: "Keynote",
+                                    content_type: "video/mp4",
+                                    file_name: "VID_0001.mp4",
+                                    width_px: 1280,
+                                    height_px: 720,
+                                    duration_sec: 2700,
+                                    frame_rate: 24
+                                }
+                            </code>
+                        </pre>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Schema Versioning Pattern</h3>
+
+                    <ul>
+                        <li>Leverages the flexible schema</li>
+                        <li>Allows documents to evolve over time</li>
+                        <li>Applications naturally can migrate older versions as needed</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Attribute Pattern</h3>
+                </section>
+
+                <section>
+                    <h3>Attribute Pattern Example</h3>
+
+                    <div class="example">
+                        <pre>
+                            <code class="javascript" data-trim data-noescape data-line-numbers="">
+                            {
+                                title: "Star Wars",
+                                director: "George Lucas",
+                                ...
+                                release_US: ISODate("1977-05-20T01:00:00+01:00"),
+                                release_France: ISODate("1977-10-19T01:00:00+01:00"),
+                                release_Italy: ISODate("1977-10-20T01:00:00+01:00"),
+                                release_UK: ISODate("1977-12-27T01:00:00+01:00"),
+                                ...
+                            }
+                            </code>
+                        </pre>
+                    </div>
+
+                    <div>
+                        <pre>
+                            <code class="json" data-trim data-noescape>
+                            {
+                                title: "Star Wars",
+                                director: "George Lucas",
+                                …
+                                releases: [
+                                    { location: "USA", date: "1977-05-20" },
+                                    { location: "France", date: "1977-10-19" },
+                                    { location: "Italy", date: "1977-10-20" },
+                                    { location: "UK", date: "1977-12-27" },
+                                    … 
+                                ],
+                                … 
+                            }
+                            </code>
+                        </pre>
+                    </div>
+
+                    <div class="example-controls footnote">https://www.mongodb.com/blog/post/building-with-patterns-the-attribute-pattern</div>
+                </section>
             </section>
 
             <section>
-                <section>
-                    <h2>Transactions</h2>
-                </section>
+                <div class="title-slide">
+                    <div class="hero-image">
+                        <img src="./assets/images/mongodb-intro-qr.png" class="hero_image" />
+                    </div>
+
+                    <div class="title-content">
+                        <h2>Thank you!</h2>
+                        <p style="font-size: 0.5em">
+                            Dave Fancher<br />
+                            Lead Software Engineer<br />
+                            Vibenomics, A Mood Media Company<br />
+                        </p>
+                        <hr />
+                        <p style="font-size: 0.5em; margin-bottom: 1.5em;">
+                            LinkedIn: davefancher<br />
+                        </p>
+                    </div>
+                </div>
             </section>
         </div>
     </div>

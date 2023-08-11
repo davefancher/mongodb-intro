@@ -179,6 +179,9 @@ const SOCKET_COMMANDS = Object.freeze({
         async client => {
             const movies = client.db(DB_NAME).collection("movies");
 
+            // Note that the node.js driver used here doesn't expose the
+            // hideIndex command directly so we need to fall back onto
+            // running the command via the `command` function on the database
             const hideIndexResult =
                 await client
                     .db(DB_NAME)
@@ -200,7 +203,7 @@ const SOCKET_COMMANDS = Object.freeze({
                     .explain();
 
             return {
-                createIndexResult: hideIndexResult,
+                hideIndexResult,
                 explainResult
             };
         }
